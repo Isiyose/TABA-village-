@@ -1,0 +1,5 @@
+{
+  "name": "Remix: Rusororo Cell Dashboard",
+  "description": "A modern administrative dashboard for Rusororo Cell (Nyanza Cell, Gatenga Sector, Kicukiro District) featuring citizen management, geospatial mapping, real-time notifications, and automated SMS communication.",
+  "requestFramePermissions": []
+}

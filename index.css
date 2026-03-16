@@ -1,0 +1,161 @@
+@import "tailwindcss";
+@import "leaflet/dist/leaflet.css";
+@plugin "tailwindcss-animate";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+@theme {
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --color-primary-500: var(--primary);
+}
+
+/* Leaflet Map Fixes */
+.leaflet-container {
+  height: 100%;
+  width: 100%;
+  z-index: 0;
+}
+
+.leaflet-pane {
+  z-index: 0 !important;
+}
+
+.leaflet-top,
+.leaflet-bottom {
+  z-index: 1000 !important;
+}
+
+:root {
+  --primary: #2563eb;
+  --primary-light: #60a5fa;
+  --primary-dark: #1d4ed8;
+  --secondary: #1e293b;
+  --success: #10b981;
+  --danger: #ef4444;
+  --warning: #f59e0b;
+  --purple: #8b5cf6;
+  --light-bg: #f1f5f9;
+  --white: #ffffff;
+  --border: #e2e8f0;
+  --text-dark: #0f172a;
+  --text-muted: #64748b;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --card-hover: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.dark {
+  --primary: #3b82f6;
+  --secondary: #0f172a;
+  --light-bg: #1e293b;
+  --white: #0f172a;
+  --border: #334155;
+  --text-dark: #f8fafc;
+  --text-muted: #94a3b8;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+}
+
+@layer base {
+  body {
+    @apply bg-[var(--light-bg)] text-[var(--text-dark)] transition-colors duration-300;
+    margin: 0;
+    font-family: 'Inter', 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+  }
+}
+
+/* Custom UI Components from HTML */
+.modern-stat-card {
+  @apply bg-[var(--white)] p-6 rounded-2xl border border-[var(--border)] shadow-[var(--card-shadow)] transition-all duration-300 flex items-center justify-between overflow-hidden;
+}
+
+.modern-stat-card:hover {
+  @apply -translate-y-1 shadow-[var(--card-hover)];
+}
+
+.stat-icon-wrap {
+  @apply w-14 h-14 rounded-xl flex items-center justify-center text-2xl shrink-0 mr-4;
+}
+
+.bg-icon-blue { @apply bg-blue-50 text-blue-600 dark:bg-blue-900/20 dark:text-blue-400; }
+.bg-icon-green { @apply bg-emerald-50 text-emerald-600 dark:bg-emerald-900/20 dark:text-emerald-400; }
+.bg-icon-purple { @apply bg-purple-50 text-purple-600 dark:bg-purple-900/20 dark:text-purple-400; }
+.bg-icon-orange { @apply bg-orange-50 text-orange-600 dark:bg-orange-900/20 dark:text-orange-400; }
+
+.chart-card {
+  @apply bg-[var(--white)] rounded-2xl border border-[var(--border)] shadow-[var(--card-shadow)] p-6 flex flex-col;
+}
+
+.demo-card {
+  @apply bg-[var(--white)] p-5 rounded-2xl border border-[var(--border)] shadow-[var(--card-shadow)] text-center;
+}
+
+.table-container {
+  @apply bg-[var(--white)] rounded-2xl shadow-[var(--card-shadow)] border border-[var(--border)] overflow-hidden p-6;
+}
+
+.badge {
+  @apply px-3 py-1.5 rounded-full font-semibold text-[11px] uppercase inline-block;
+}
+
+.bg-green { @apply bg-emerald-100 text-emerald-800 dark:bg-emerald-900/30 dark:text-emerald-400; }
+.bg-red { @apply bg-rose-100 text-rose-800 dark:bg-rose-900/30 dark:text-rose-400; }
+.bg-blue { @apply bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400; }
+.bg-purple { @apply bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400; }
+.bg-warning { @apply bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400; }
+
+/* Accent color themes */
+.accent-blue { --primary: #2563eb; --primary-dark: #1d4ed8; }
+.accent-emerald { --primary: #10b981; --primary-dark: #059669; }
+.accent-rose { --primary: #f43f5e; --primary-dark: #e11d48; }
+.accent-amber { --primary: #f59e0b; --primary-dark: #d97706; }
+.accent-indigo { --primary: #6366f1; --primary-dark: #4f46e5; }
+.sidebar {
+  @apply w-64 bg-slate-900 dark:bg-slate-950 text-white flex flex-col shadow-xl z-10 transition-all shrink-0;
+}
+
+.main-content {
+  @apply flex-grow flex flex-col overflow-hidden;
+}
+
+.top-bar {
+  @apply px-10 py-8 flex justify-between items-center bg-slate-50 dark:bg-slate-900 transition-colors duration-200;
+}
+
+.content-section {
+  @apply flex-grow px-10 pb-10 overflow-y-auto;
+}
+
+.nav-link {
+  @apply w-full flex items-center gap-3 px-6 py-3 text-left text-sm cursor-pointer transition-all border-l-4 border-transparent text-slate-400 hover:bg-white/5 hover:text-white;
+}
+
+.nav-link.active {
+  @apply bg-white/10 text-white border-primary-500 font-semibold;
+}
+
+.login-wrapper {
+  @apply min-h-screen bg-gradient-to-br from-slate-900 to-blue-700 dark:from-slate-950 dark:to-slate-900 flex flex-col items-center py-8 overflow-y-auto;
+}
+
+.login-card {
+  @apply bg-white dark:bg-slate-800 p-10 rounded-3xl shadow-2xl w-full max-w-md text-center mt-10 backdrop-blur-lg animate-in fade-in slide-in-from-bottom-4 duration-500;
+}
+
+.login-header h2 {
+  @apply text-blue-600 dark:text-blue-400 text-3xl font-bold uppercase tracking-widest mb-1;
+}
+
+.login-header h3 {
+  @apply text-slate-500 dark:text-slate-400 text-sm font-medium mb-8;
+}
+
+.public-nav {
+  @apply sticky top-5 z-50 flex gap-4 mb-10 bg-white/20 dark:bg-slate-800/50 p-2 rounded-full backdrop-blur-md border border-white/30 dark:border-slate-700/50 shadow-2xl items-center;
+}
+
+.public-nav-btn {
+  @apply px-6 py-2.5 rounded-full text-sm font-semibold transition-all text-white/90 dark:text-slate-300 hover:bg-white/20 dark:hover:bg-slate-700/50;
+}
+
+.public-nav-btn.active {
+  @apply bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-md;
+}

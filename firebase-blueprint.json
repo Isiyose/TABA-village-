@@ -1,0 +1,162 @@
+{
+  "entities": {
+    "Citizen": {
+      "title": "Citizen",
+      "description": "A citizen registered in the cell.",
+      "type": "object",
+      "properties": {
+        "firstName": { "type": "string" },
+        "lastName": { "type": "string" },
+        "middleName": { "type": "string" },
+        "nationalId": { "type": "string" },
+        "phone": { "type": "string" },
+        "phoneOwnership": { "type": "string", "enum": ["Own", "Spouse", "Parent", "Friend"] },
+        "gender": { "type": "string", "enum": ["Male", "Female"] },
+        "dob": { "type": "string", "format": "date" },
+        "isibo": { "type": "string" },
+        "marital": { "type": "string", "enum": ["Single", "Married", "Divorced", "Widowed"] },
+        "housingType": { "type": "string", "enum": ["Homeowner", "Tenant"] },
+        "residency": { "type": "string", "enum": ["Still in Cell", "Moved Out"] },
+        "approvalStatus": { "type": "string", "enum": ["pending", "approved", "rejected"] },
+        "isArchived": { "type": "boolean" },
+        "archivedAt": { "type": "string", "format": "date-time" },
+        "archivedBy": { "type": "string" },
+        "insurance": { "type": "string" },
+        "hasCertificate": { "type": "boolean" },
+        "certificateNumber": { "type": "string" },
+        "spName": { "type": "string" },
+        "spGender": { "type": "string" },
+        "spId": { "type": "string" },
+        "spPhone": { "type": "string" },
+        "spDob": { "type": "string", "format": "date" },
+        "children": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": { "type": "string" },
+              "gender": { "type": "string" },
+              "dob": { "type": "string", "format": "date" },
+              "livesWithParent": { "type": "boolean" },
+              "currentLocation": { "type": "string" },
+              "nationalId": { "type": "string" },
+              "phone": { "type": "string" }
+            }
+          }
+        },
+        "photoUrl": { "type": "string" },
+        "registrationDate": { "type": "string", "format": "date-time" }
+      },
+      "required": ["firstName", "lastName", "nationalId"]
+    },
+    "Isibo": {
+      "title": "Isibo",
+      "description": "A community group within the cell.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string" },
+        "leader": { "type": "string" },
+        "phone": { "type": "string" },
+        "lat": { "type": "number" },
+        "lng": { "type": "number" }
+      },
+      "required": ["name"]
+    },
+    "Admin": {
+      "title": "Admin",
+      "description": "A staff member with administrative access.",
+      "type": "object",
+      "properties": {
+        "email": { "type": "string", "format": "email" },
+        "role": { "type": "string", "enum": ["superadmin", "admin", "viewer"] },
+        "username": { "type": "string" },
+        "password": { "type": "string" },
+        "status": { "type": "string", "enum": ["active", "inactive"] },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["role"]
+    },
+    "Notice": {
+      "title": "Notice",
+      "description": "An internal announcement for staff.",
+      "type": "object",
+      "properties": {
+        "title": { "type": "string" },
+        "message": { "type": "string" },
+        "priority": { "type": "string", "enum": ["Normal", "Urgent"] },
+        "author": { "type": "string" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["title", "message", "author"]
+    },
+    "Log": {
+      "title": "Log",
+      "description": "A record of system activity.",
+      "type": "object",
+      "properties": {
+        "action": { "type": "string" },
+        "details": { "type": "string" },
+        "user": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      },
+      "required": ["action", "user", "timestamp"]
+    },
+    "Message": {
+      "title": "Message",
+      "description": "A message from the public portal.",
+      "type": "object",
+      "properties": {
+        "from": { "type": "string" },
+        "email": { "type": "string" },
+        "message": { "type": "string" },
+        "date": { "type": "string", "format": "date-time" },
+        "isRead": { "type": "boolean" }
+      },
+      "required": ["from", "message"]
+    },
+    "Transfer": {
+      "title": "Transfer",
+      "description": "A record of a citizen transfer.",
+      "type": "object",
+      "properties": {
+        "citizenId": { "type": "string" },
+        "citizenName": { "type": "string" },
+        "fromCell": { "type": "string" },
+        "toCell": { "type": "string" },
+        "status": { "type": "string", "enum": ["pending", "completed"] },
+        "date": { "type": "string", "format": "date-time" }
+      },
+      "required": ["citizenId", "toCell"]
+    }
+  },
+  "firestore": {
+    "/citizens": {
+      "schema": "Citizen",
+      "description": "Collection of all citizens."
+    },
+    "/isibos": {
+      "schema": "Isibo",
+      "description": "Collection of all isibos."
+    },
+    "/admins": {
+      "schema": "Admin",
+      "description": "Collection of authorized staff."
+    },
+    "/notices": {
+      "schema": "Notice",
+      "description": "Collection of staff notices."
+    },
+    "/logs": {
+      "schema": "Log",
+      "description": "Collection of system logs."
+    },
+    "/messages": {
+      "schema": "Message",
+      "description": "Collection of public messages."
+    },
+    "/transfers": {
+      "schema": "Transfer",
+      "description": "Collection of citizen transfers."
+    }
+  }
+}

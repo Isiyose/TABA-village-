@@ -1,0 +1,184 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: citizens
+    // Fields: firstName, lastName, nationalId, phone, gender, dob, isibo, 
+    //         housingType, residency, approvalStatus, isArchived, 
+    //         archivedAt, archivedBy, insurance, registrationDate
+    //
+    // Collection: isibos
+    // Fields: name, leader, phone, lat, lng
+    //
+    // Collection: admins
+    // Fields: email, role, username
+    //
+    // Collection: notices
+    // Fields: title, message, priority, author, createdAt
+    //
+    // Collection: logs
+    // Fields: action, details, user, timestamp
+    //
+    // ===============================================================
+
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return isAuthenticated() &&
+        (
+          (request.auth.token.email in ["jkljean21@gmail.com", "ishimwe.jeanluc48@gmail.com"] && request.auth.token.email_verified == true) ||
+          (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['admin', 'superadmin'])
+        );
+    }
+
+    function isSuperAdmin() {
+      return isAuthenticated() &&
+        (
+          (request.auth.token.email in ["jkljean21@gmail.com", "ishimwe.jeanluc48@gmail.com"] && request.auth.token.email_verified == true) ||
+          (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'superadmin')
+        );
+    }
+
+    function isViewer() {
+      return isAuthenticated() &&
+        (
+          (request.auth.token.email in ["jkljean21@gmail.com", "ishimwe.jeanluc48@gmail.com"] && request.auth.token.email_verified == true) ||
+          (exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role in ['viewer', 'admin', 'superadmin'])
+        );
+    }
+
+    function isValidEmail(email) {
+      return email is string &&
+        email.matches("^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$");
+    }
+
+    function hasOnlyAllowedFields(fields) {
+      return request.resource.data.keys().hasOnly(fields);
+    }
+
+    // ===============================================================
+    // Domain Validators
+    // ===============================================================
+
+    function isValidCitizen(data) {
+      return data.firstName is string && data.firstName.size() > 0 && data.firstName.size() < 100 &&
+             data.lastName is string && data.lastName.size() > 0 && data.lastName.size() < 100 &&
+             data.nationalId is string && data.nationalId.size() == 16 &&
+             (!('hasCertificate' in data) || data.hasCertificate is bool) &&
+             (!('certificateNumber' in data) || data.certificateNumber is string);
+    }
+
+    function isValidIsibo(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() < 100;
+    }
+
+    function isValidAdmin(data) {
+      return data.role in ['superadmin', 'admin', 'viewer'] &&
+             data.username is string && data.username.size() > 0 &&
+             data.password is string && data.password.size() > 0 &&
+             data.status in ['active', 'inactive'] &&
+             data.createdAt is string;
+    }
+
+    function isValidNotice(data) {
+      return data.title is string && data.title.size() > 0 && data.title.size() < 200 &&
+             data.message is string && data.message.size() > 0 && data.message.size() < 5000;
+    }
+
+    function isValidLog(data) {
+      return data.action is string && data.user is string;
+    }
+
+    function isValidMessage(data) {
+      return data.from is string &&
+             isValidEmail(data.email) &&
+             data.message is string &&
+             data.date is string;
+    }
+
+    function isValidTransfer(data) {
+      return data.citizenId is string &&
+             data.citizenName is string &&
+             data.fromCell is string &&
+             data.toCell is string &&
+             data.status in ['pending', 'approved', 'rejected'] &&
+             data.date is string;
+    }
+
+    // ===============================================================
+    // Rules
+    // ===============================================================
+
+    match /citizens/{citizenId} {
+      allow read: if isViewer();
+      allow create: if isAdmin() && isValidCitizen(request.resource.data);
+      allow update: if isAdmin() && isValidCitizen(request.resource.data);
+      allow delete: if isSuperAdmin();
+    }
+
+    match /isibos/{isiboId} {
+      allow read: if isViewer();
+      allow create: if isAdmin() && isValidIsibo(request.resource.data);
+      allow update: if isAdmin() && isValidIsibo(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /admins/{adminId} {
+      allow read: if isAuthenticated();
+      // Allow superadmins to create/delete admins
+      // Also allow an authenticated user to create their own admin doc during migration
+      allow create: if (isSuperAdmin() && isValidAdmin(request.resource.data)) || 
+                    (isAuthenticated() && adminId == request.auth.uid);
+      allow update: if (isSuperAdmin() && isValidAdmin(request.resource.data)) || 
+                    (isAuthenticated() && (adminId == request.auth.uid || resource.data.uid == ''));
+      // Allow deletion if superadmin or if it's an unclaimed admin doc (for migration)
+      allow delete: if isSuperAdmin() || (isAuthenticated() && resource.data.uid == '');
+    }
+
+    match /notices/{noticeId} {
+      allow read: if isViewer();
+      allow create: if isAdmin() && isValidNotice(request.resource.data);
+      allow update: if isAdmin() && isValidNotice(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /messages/{messageId} {
+      allow read: if isViewer();
+      allow create: if isValidMessage(request.resource.data);
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    match /transfers/{transferId} {
+      allow read: if isViewer();
+      allow create: if isAdmin() && isValidTransfer(request.resource.data);
+      allow update: if isAdmin() && isValidTransfer(request.resource.data);
+      allow delete: if isAdmin();
+    }
+
+    match /logs/{logId} {
+      allow read: if isAdmin();
+      allow create: if isAuthenticated() && isValidLog(request.resource.data);
+      allow update: if false;
+      allow delete: if false;
+    }
+
+    // Default deny
+    match /{path=**} {
+      allow read, write: if false;
+    }
+  }
+}
